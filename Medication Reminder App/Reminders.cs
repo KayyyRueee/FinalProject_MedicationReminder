@@ -12,23 +12,30 @@ namespace Medication_Reminder_App
         private bool IsActive { get; set; }
         private DateTime? LastTriggeredDate { get; set; }   //Helps the app remember whether the reminder was triggered
 
-        public Reminders(int ReminderId, int MedicationId,
-                            DateTime ReminderTime, bool IsActive)
+        public Reminders(int reminderId, int medicationId,
+                            DateTime reminderTime, bool isActive)
         {
-            if (ReminderId <= 0)
+            if (reminderId <= 0)
                 throw new ArgumentException("Reminder ID must be greater than zero.");
-            if (MedicationId <= 0)
+            if (medicationId <= 0)
                 throw new ArgumentException("Medication ID must be greater than zero.");
 
-            this.ReminderId = ReminderId;
-            this.MedicationId = MedicationId;
-            this.ReminderTime = ReminderTime;
-            this.IsActive = IsActive;
+            this.ReminderId = reminderId;
+            this.MedicationId = medicationId;
+            this.ReminderTime = reminderTime;
+            this.IsActive = isActive;
             this.LastTriggeredDate = null;
         }
 
         public bool CheckReminders(Medication medication)
         {
+            if (medication == null)
+                throw new ArgumentNullException(nameof(medication));
+
+            if (medication.MedicationId != MedicationId)
+                throw new ArgumentException(
+                    "The medication does not match this reminder.", nameof(medication));
+
             DateTime now = DateTime.Now; // the now stores the current date and time
 
             if (!IsActive || !medication.IsActive(now))
@@ -58,6 +65,15 @@ namespace Medication_Reminder_App
         public static List<Reminders> CreateDailyReminders(
             int medicationId, List<TimeSpan> times, int firstReminderId)
         {
+            if (medicationId <= 0)
+                throw new ArgumentException("Medication ID must be greater than zero.");
+
+            if (firstReminderId <= 0)
+                throw new ArgumentException("Reminder ID must be greater than zero.");
+
+            if (times == null)
+                throw new ArgumentNullException(nameof(times));
+
             List<Reminders> reminders = new List<Reminders>();
 
             foreach (TimeSpan time in times)

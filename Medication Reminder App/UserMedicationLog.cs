@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+
 
 namespace Medication_Reminder_App
 {
@@ -10,20 +10,20 @@ namespace Medication_Reminder_App
         public string Notes { get; set; }
         public DateTime TakenTime { get; set; }
 
-        public UserMedicationLog(int LogId, int MedicationId, string Notes, DateTime TakenTime)
+        public UserMedicationLog(int logId, int medicationId, string notes, DateTime takenTime)
         {
-            if (LogId <= 0)
+            if (logId <= 0)
                 throw new ArgumentException(
                     "Log ID must be greater than zero.");
 
-            if (MedicationId <= 0)
+            if (medicationId <= 0)
                 throw new ArgumentException(
                     "Medication ID must be greater than zero.");
 
-            this.LogId = LogId;
-            this.MedicationId = MedicationId;
-            this.Notes = Notes;
-            this.TakenTime = TakenTime;
+            this.LogId = logId;
+            this.MedicationId = medicationId;
+            this.Notes = notes ?? string.Empty;
+            this.TakenTime = takenTime;
         }
 
         public void LogMedicationTaken(int medicationId)

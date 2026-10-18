@@ -12,7 +12,7 @@ namespace Medication_Reminder_App
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             ClassTests.RunAllTests();
-            Application.Run(new Form1());
+            Application.Run(new FrmMedReminder());
         }
     }
 }

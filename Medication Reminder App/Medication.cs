@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Medication_Reminder_App
 {
@@ -8,37 +6,40 @@ namespace Medication_Reminder_App
     {
         public string Name { get; set; }
         public int MedicationId { get; set; }
-        public string Dosage { get; set; } 
+        public string Dosage { get; set; }
         public string Frequency { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
 
-        public Medication(int MedicationId, string Name, string Dosage, string Frequency, DateTime StartDate, DateTime EndDate)
+        public Medication(int medicationId, string name, string dosage, string frequency, DateTime startDate, DateTime endDate)
         {
-            if (string.IsNullOrWhiteSpace(Name))
+            if (medicationId <= 0)
+                throw new ArgumentException("Medication ID must be greater than zero.");
+
+            if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Medication name is required.");
 
-            if (string.IsNullOrWhiteSpace(Dosage))
+            if (string.IsNullOrWhiteSpace(dosage))
                 throw new ArgumentException("Dosage is required.");
 
-            if (string.IsNullOrWhiteSpace(Frequency))
+            if (string.IsNullOrWhiteSpace(frequency))
                 throw new ArgumentException("Frequency is required.");
 
-            if (EndDate < StartDate)
+            if (endDate < startDate)
                 throw new ArgumentException("End date cannot be before start date.");
 
-            this.MedicationId = MedicationId;
-            this.Name = Name;
-            this.Dosage = Dosage;
-            this.Frequency = Frequency;
-            this.StartDate = StartDate;
-            this.EndDate = EndDate;
+            this.MedicationId = medicationId;
+            this.Name = name;
+            this.Dosage = dosage;
+            this.Frequency = frequency;
+            this.StartDate = startDate;
+            this.EndDate = endDate;
         }
 
         public bool IsDue(DateTime currentTime)
         {
-            return currentTime.Date >= this.StartDate && currentTime.Date <= this.EndDate;
+            return currentTime.Date >= this.StartDate.Date && currentTime.Date <= this.EndDate.Date;
         }
 
         public bool IsActive(DateTime currentTime)
