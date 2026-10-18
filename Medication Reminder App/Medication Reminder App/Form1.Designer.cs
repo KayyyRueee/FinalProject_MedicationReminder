@@ -268,7 +268,7 @@
             // 
             // dgvMedsNRemind
             // 
-            dgvMedsNRemind.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            dgvMedsNRemind.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgvMedsNRemind.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvMedsNRemind.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgvMedsNRemind.BackgroundColor = Color.BlanchedAlmond;

@@ -1,30 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace Medication_Reminder_App
 {
-    internal class Reminders
+    public class Reminders
     {
         private int ReminderId { get; set; }
         public int MedicationId { get; set; }
         public DateTime ReminderTime { get; set; }
         private bool IsActive { get; set; }
-        private DateTime? LastTriggeredDate { get; set; }   //Helps the app remember whether the reminder was triggered
+        private DateTime? LastTriggeredDate { get; set; }
 
         public Reminders(int reminderId, int medicationId,
-                            DateTime reminderTime, bool isActive)
+            DateTime reminderTime, bool isActive)
         {
             if (reminderId <= 0)
                 throw new ArgumentException("Reminder ID must be greater than zero.");
             if (medicationId <= 0)
                 throw new ArgumentException("Medication ID must be greater than zero.");
 
-            this.ReminderId = reminderId;
-            this.MedicationId = medicationId;
-            this.ReminderTime = reminderTime;
-            this.IsActive = isActive;
-            this.LastTriggeredDate = null;
+            ReminderId = reminderId;
+            MedicationId = medicationId;
+            ReminderTime = reminderTime;
+            IsActive = isActive;
+            LastTriggeredDate = null;
         }
 
         public bool CheckReminders(Medication medication)
@@ -33,24 +32,17 @@ namespace Medication_Reminder_App
                 throw new ArgumentNullException(nameof(medication));
 
             if (medication.MedicationId != MedicationId)
-                throw new ArgumentException(
-                    "The medication does not match this reminder.", nameof(medication));
+                throw new ArgumentException("Medication does not match this reminder.");
 
-            DateTime now = DateTime.Now; // the now stores the current date and time
-
-            if (!IsActive || !medication.IsActive(now))
+            if (!IsActive || !medication.IsActive(DateTime.Now))
                 return false;
 
-            bool timeReached =
-                now.TimeOfDay >= ReminderTime.TimeOfDay;  //Checks only the time not the date as well. This is for 7:00 alamrs everyday
+            if (LastTriggeredDate.HasValue)
+                return false;
 
-            bool notTriggeredToday =
-                LastTriggeredDate == null ||
-                LastTriggeredDate.Value.Date != now.Date;
-
-            if (timeReached && notTriggeredToday)
+            if (DateTime.Now >= ReminderTime)
             {
-                LastTriggeredDate = now.Date;
+                LastTriggeredDate = DateTime.Now;
                 return true;
             }
 
@@ -67,10 +59,8 @@ namespace Medication_Reminder_App
         {
             if (medicationId <= 0)
                 throw new ArgumentException("Medication ID must be greater than zero.");
-
             if (firstReminderId <= 0)
                 throw new ArgumentException("Reminder ID must be greater than zero.");
-
             if (times == null)
                 throw new ArgumentNullException(nameof(times));
 
@@ -79,8 +69,7 @@ namespace Medication_Reminder_App
             foreach (TimeSpan time in times)
             {
                 if (time < TimeSpan.Zero || time >= TimeSpan.FromDays(1))
-                    throw new ArgumentException(
-                        "Reminder times must be within one day.");
+                    throw new ArgumentException("Reminder time must be within one day.");
 
                 reminders.Add(new Reminders(
                     firstReminderId++,
@@ -91,6 +80,5 @@ namespace Medication_Reminder_App
 
             return reminders;
         }
-
     }
 }

@@ -1,16 +1,19 @@
 ﻿using System;
 
-
 namespace Medication_Reminder_App
 {
-    internal class UserMedicationLog
+    public class UserMedicationLog
     {
-        public int LogId { get; set; }
-        public int MedicationId { get; set; }
-        public string Notes { get; set; }
-        public DateTime TakenTime { get; set; }
+        public int LogId { get; private set; }
+        public int MedicationId { get; private set; }
+        public string Notes { get; private set; }
+        public DateTime TakenTime { get; private set; }
 
-        public UserMedicationLog(int logId, int medicationId, string notes, DateTime takenTime)
+        public UserMedicationLog(
+            int logId,
+            int medicationId,
+            string notes,
+            DateTime takenTime)
         {
             if (logId <= 0)
                 throw new ArgumentException(
@@ -20,23 +23,20 @@ namespace Medication_Reminder_App
                 throw new ArgumentException(
                     "Medication ID must be greater than zero.");
 
-            this.LogId = logId;
-            this.MedicationId = medicationId;
-            this.Notes = notes ?? string.Empty;
-            this.TakenTime = takenTime;
+            LogId = logId;
+            MedicationId = medicationId;
+            Notes = notes ?? string.Empty;
+            TakenTime = takenTime;
         }
 
         public void LogMedicationTaken(int medicationId)
         {
-            //if statement first to validate the medication ID
             if (medicationId <= 0)
                 throw new ArgumentException(
-                    "Medication ID must be greater than zero.");   //stops the app from logging a medication that doesn't exist in the database
+                    "Medication ID must be greater than zero.");
 
-            this.MedicationId = medicationId; //stores which meds were taken
-            this.TakenTime = DateTime.Now;    //stores the time the meds were taken
+            MedicationId = medicationId;
+            TakenTime = DateTime.Now;
         }
-
-       
     }
 }

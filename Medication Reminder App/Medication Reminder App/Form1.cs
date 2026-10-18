@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +19,7 @@ namespace Medication_Reminder_App
         {
             InitializeComponent();
 
-            reminderTimer.Interval = 30000;
+            reminderTimer.Interval = 3000;
             reminderTimer.Tick -= ReminderTimer_Tick;
             reminderTimer.Tick += ReminderTimer_Tick;
             reminderTimer.Start();
@@ -36,31 +35,29 @@ namespace Medication_Reminder_App
             dgvMedsNRemind.MultiSelect = false;
             dgvMedsNRemind.ReadOnly = true;
             dgvMedsNRemind.AllowUserToAddRows = false;
-
             dgvMedsNRemind.AutoSizeColumnsMode =
-                DataGridViewAutoSizeColumnsMode.Fill;
+                DataGridViewAutoSizeColumnsMode.AllCells;
             dgvMedsNRemind.AutoSizeRowsMode =
-                DataGridViewAutoSizeRowsMode.None;
-            dgvMedsNRemind.AllowUserToAddRows = false;
+                DataGridViewAutoSizeRowsMode.AllCells;
             dgvMedsNRemind.ColumnHeadersVisible = false;
             dgvMedsNRemind.RowHeadersVisible = false;
             dgvMedsNRemind.ScrollBars = ScrollBars.Both;
         }
-
-
 
         private void btnAddMed_Click(object sender, EventArgs e)
         {
             if (!int.TryParse(txtMedId.Text, out int medicationId) ||
                 medicationId <= 0)
             {
-                MessageBox.Show("Enter a valid medication ID greater than zero.");
+                MessageBox.Show(
+                    "Enter a valid medication ID greater than zero.");
                 return;
             }
 
             if (medications.Any(m => m.MedicationId == medicationId))
             {
-                MessageBox.Show("That medication ID is already being used.");
+                MessageBox.Show(
+                    "That medication ID is already being used.");
                 return;
             }
 
@@ -68,7 +65,8 @@ namespace Medication_Reminder_App
                 string.IsNullOrWhiteSpace(txtDosage.Text) ||
                 string.IsNullOrWhiteSpace(cmbFrequency.Text))
             {
-                MessageBox.Show("Enter the medication name, dosage, and frequency.");
+                MessageBox.Show(
+                    "Enter the medication name, dosage, and frequency.");
                 return;
             }
 
@@ -89,51 +87,76 @@ namespace Medication_Reminder_App
                     startDate,
                     endDate);
 
-                List<TimeSpan> reminderTimes = new List<TimeSpan>();
+                // Save the medication so the timer can find it.
+                medications.Add(medication);
 
+                // Demo schedule: reminders start when the medication
+                // is added, then follow the selected frequency.
+                List<TimeSpan> reminderOffsets = new List<TimeSpan>();
                 string frequency = cmbFrequency.Text.ToLowerInvariant();
 
-                if (frequency.Contains("3") || frequency.Contains("three"))
+                if (frequency.Contains("3") ||
+                    frequency.Contains("three"))
                 {
-                    reminderTimes.Add(new TimeSpan(8, 0, 0));
-                    reminderTimes.Add(new TimeSpan(14, 0, 0));
-                    reminderTimes.Add(new TimeSpan(20, 0, 0));
+                    reminderOffsets.Add(TimeSpan.Zero);
+                    reminderOffsets.Add(TimeSpan.FromSeconds(15));
+                    reminderOffsets.Add(TimeSpan.FromSeconds(30));
                 }
                 else if (frequency.Contains("2") ||
                          frequency.Contains("twice"))
                 {
-                    reminderTimes.Add(new TimeSpan(8, 0, 0));
-                    reminderTimes.Add(new TimeSpan(20, 0, 0));
+                    reminderOffsets.Add(TimeSpan.Zero);
+                    reminderOffsets.Add(TimeSpan.FromSeconds(30));
                 }
                 else
                 {
-                    reminderTimes.Add(new TimeSpan(8, 0, 0));
+                    reminderOffsets.Add(TimeSpan.Zero);
                 }
 
-                List<Reminders> newReminders =
-                    Reminders.CreateDailyReminders(
-                        medicationId, reminderTimes, nextReminderId);
+                // Create actual reminder times relative to now.
+                DateTime firstReminderTime = DateTime.Now.AddSeconds(3);
+                List<Reminders> newReminders = new List<Reminders>();
 
-                nextReminderId += newReminders.Count;
+                foreach (TimeSpan offset in reminderOffsets)
+                {
+                    Reminders reminder = new Reminders(
+                        nextReminderId,
+                        medicationId,
+                        firstReminderTime.Add(offset),
+                        true);
 
-                medications.Add(medication);
+                    newReminders.Add(reminder);
+                    nextReminderId++;
+                }
+
+                // Save reminders so the timer can check them.
                 reminders.AddRange(newReminders);
 
                 dgvMedsNRemind.Rows.Add(
                     medication.Name,
                     medication.Dosage,
-                    string.Join(", ", reminderTimes.Select(
-                        time => DateTime.Today.Add(time).ToString("h:mm tt"))));
+                    string.Join(", ", newReminders.Select(
+                        r => r.ReminderTime.ToString("h:mm:ss tt"))));
 
                 dgvMedsNRemind.Rows[
                     dgvMedsNRemind.Rows.Count - 1].Tag = medication;
 
-                int desiredHeight =
-                    dgvMedsNRemind.Rows.Count * dgvMedsNRemind.RowTemplate.Height;
+                dgvMedsNRemind.AutoSizeRowsMode =
+                    DataGridViewAutoSizeRowsMode.AllCells;
+
+                int desiredHeight = dgvMedsNRemind.ColumnHeadersHeight;
+
+                foreach (DataGridViewRow row in dgvMedsNRemind.Rows)
+                {
+                    desiredHeight += row.GetPreferredHeight(
+                        row.Index, DataGridViewAutoSizeRowMode.AllCells, true);
+                }
 
                 dgvMedsNRemind.Height = Math.Min(desiredHeight, 300);
 
-                MessageBox.Show("Medication added successfully.");
+                MessageBox.Show(
+                    "Medication added successfully. The demo reminder " +
+                    "will appear shortly.");
 
                 txtMedId.Clear();
                 txtMedName.Clear();
@@ -144,6 +167,9 @@ namespace Medication_Reminder_App
             }
             catch (ArgumentException ex)
             {
+                // Remove the medication if setup failed after adding it.
+                medications.RemoveAll(m => m.MedicationId == medicationId);
+
                 MessageBox.Show(ex.Message, "Invalid Medication");
             }
         }
@@ -161,7 +187,8 @@ namespace Medication_Reminder_App
 
             if (medication == null)
             {
-                MessageBox.Show("The selected medication could not be found.");
+                MessageBox.Show(
+                    "The selected medication could not be found.");
                 return;
             }
 
@@ -187,7 +214,7 @@ namespace Medication_Reminder_App
 
         private void ReminderTimer_Tick(object sender, EventArgs e)
         {
-            foreach (Reminders reminder in reminders)
+            foreach (Reminders reminder in reminders.ToList())
             {
                 Medication medication = medications.FirstOrDefault(
                     m => m.MedicationId == reminder.MedicationId);
@@ -214,7 +241,8 @@ namespace Medication_Reminder_App
         private void monthCalendar1_DateChanged(
             object sender, DateRangeEventArgs e)
         {
-            txtStDt.Text = monthCalendar1.SelectionStart.ToShortDateString();
+            txtStDt.Text =
+                monthCalendar1.SelectionStart.ToShortDateString();
         }
 
         private void txtMedName_TextChanged(object sender, EventArgs e)
